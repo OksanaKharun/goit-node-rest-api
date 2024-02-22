@@ -1,30 +1,36 @@
 
-import contactsService from "../services/contactsServices.js";
-const schema = require("../schemas/contactsSchemas.js");
-const { HttpError } = require("../helpers/HttpError.js");
+import {listContacts,
+  getContactById,
+  addContact,
+  removeContact,
+    updateOneContact
+} from "../services/contactsServices.js";
+  import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
 
 
-export const getAllContacts = async (req, res) => {
-   
-    const result = await contactsService.listContacts();
-    res.status(200).json(result);
+ export const getAllContacts = async (req, res) => {
+  try {
+    const contacts = await listContacts();
+    res.status(200).json(contacts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
-
-export const getOneContact = async (req, res) => {
+ export const getOneContact = async (req, res) => {
     const { id } = req.params;
-    const result = await contactsService.getContactById(id);
+    const result = await getContactById(id);
     if (!result) {
         throw HttpError(404, `Contact with ${id} not found`);
     }
    res.status(200).json(result);
   
 }
- 
 
-export const deleteContact = async(req, res) => {
+ export const deleteContact = async(req, res) => {
     const { id } = req.params;
-    const result = await contactsService.removeContact(id);
+    const result = await removeContact(id);
     if (!result) {
     throw HttpError(404, `Contact with ${id} not found`);
   }
@@ -32,12 +38,12 @@ export const deleteContact = async(req, res) => {
 };
 
 
-export const createContact = async (req, res) => {
-    const { error } = schema.createContactSchema.validate(req.body);
+ export const createContact = async (req, res) => {
+    const { error } = createContactSchema.validate(req.body);
     if (error) {
         throw HttpError(400, error.message);
     }
-    const result = await contactsService.addContact(req.body);
+    const result = await addContact(req.body);
     res.status(201).json(result);
 };
 
@@ -50,14 +56,15 @@ export const updateContact = async (req, res) => {
         throw HttpError(400, "Body must have at least one field");
     }
 
-   const { error } = schema.updateContactSchema.validate(req.body);
+   const { error } = updateContactSchema.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
 
-    const result = await contactsService.updateContact(id, req.body);
+    const result = await updateOneContact(id, req.body);
     if (!result) {
       throw HttpError(404);
     }
     res.status(200).json(result); 
  };
+
