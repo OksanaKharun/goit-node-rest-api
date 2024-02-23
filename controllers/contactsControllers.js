@@ -1,70 +1,80 @@
 
-import {listContacts,
-  getContactById,
-  addContact,
-  removeContact,
-    updateOneContact
-} from "../services/contactsServices.js";
-  import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
+import contactsService from "../services/contactsServices.js";
+import HttpError from "../helpers/HttpError.js";
+import { createContactSchema,updateContactSchema } from "../schemas/contactsSchemas.js";
 
-
- export const getAllContacts = async (req, res) => {
-  try {
-    const contacts = await listContacts();
-    res.status(200).json(contacts);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Internal Server Error" });
-  }
-};
-
- export const getOneContact = async (req, res) => {
-    const { id } = req.params;
-    const result = await getContactById(id);
-    if (!result) {
-        throw HttpError(404, `Contact with ${id} not found`);
+export const getAllContacts = async (req, res, next) => {
+    try {
+        const result = await contactsService.listContacts();
+        res.json(result);
     }
-   res.status(200).json(result);
-  
-}
-
- export const deleteContact = async(req, res) => {
-    const { id } = req.params;
-    const result = await removeContact(id);
-    if (!result) {
-    throw HttpError(404, `Contact with ${id} not found`);
-  }
-   res.status(200).json(result);
+    catch (error) {
+        next(error)
+    }
 };
 
+export const getOneContact = async (req, res, next) => {
+    try {
+        const { id } = req.params;
+        const result = await contactsService.getContactById(id);
+        if (!result) {
+            throw HttpError(404);
+        }
+        res.json(result);
+    } catch (error) {
+        next(error)
+    }
+};
 
- export const createContact = async (req, res) => {
+export const deleteContact = async (req, res, next) => { 
+    try {
+        const { id } = req.params;
+        const result = await contactsService.removeContact(id);
+        if (!result) {
+            throw HttpError(404);
+        }
+        res.json({
+            message:'Delete success',
+        })
+    } catch (error) {
+        next(error)
+    }
+};
+
+export const createContact = async (req, res, next) => {
+    try {
     const { error } = createContactSchema.validate(req.body);
     if (error) {
-        throw HttpError(400, error.message);
+      throw HttpError(400, error.message);
     }
-    const result = await addContact(req.body);
+    const result = await contactsService.addContact(req.body);
     res.status(201).json(result);
+  } catch (error) {
+    next(error);
+  }
 };
 
-
-export const updateContact = async (req, res) => {
+export const updateContact = async (req, res, next) => {
+  try {
+      
     const { id } = req.params;
-
-    const emptyBody = Object.keys(req.body).length === 0;
-    if (emptyBody) {
-        throw HttpError(400, "Body must have at least one field");
+    const bodyIsEmpty = Object.keys(req.body).length === 0;
+    if (bodyIsEmpty) {
+      throw HttpError(400, "Body must have at least one field");
     }
 
-   const { error } = updateContactSchema.validate(req.body);
+    const { error } = updateContactSchema.validate(req.body);
     if (error) {
       throw HttpError(400, error.message);
     }
 
-    const result = await updateOneContact(id, req.body);
+    const result = await contactsService.updateContact(id, req.body);
     if (!result) {
       throw HttpError(404);
     }
-    res.status(200).json(result); 
- };
 
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+};

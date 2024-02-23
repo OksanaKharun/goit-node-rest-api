@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-   "start": "node ./app.js",
+    "start": "node ./app.js",
     "dev": "nodemon ./app.js"
   },
   "type": "module",
@@ -16,6 +16,7 @@
     "express": "^4.18.2",
     "joi": "^17.12.1",
     "morgan": "^1.10.0",
-    "nanoid": "^3.3.4"
+    "nanoid": "^3.3.4",
+    "nodemon": "^3.1.0"
   }
 }
