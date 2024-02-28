@@ -3,6 +3,7 @@ import Contact from "../models/contact.js";
 import HttpError from "../helpers/HttpError.js";
 import { createContactSchema, updateContactSchema } from "../schemas/contactsSchemas.js";
 
+
 export const getAllContacts = async (req, res, next) => {
     try {
         const contacts = await Contact.find();
@@ -20,47 +21,48 @@ export const getOneContact = async (req, res, next) => {
         if (!contact) {
             throw HttpError(404);
         }
-        res.json(contact);
+        res.status(200).json(contact);
     } catch (error) {
         next(error)
 
     }
-   res.status(200).json(result);
-  
+   
 }
  
-
-
 export const deleteContact = async (req, res, next) => { 
     try {
         const { id } = req.params;
         const contact = await Contact.findByIdAndDelete(id);
         if (!contact) {
-            throw HttpError(404);
-        }
-        res.json({
-            message:'Delete success',
-        })
-    } catch (error) {
-        next(error)
+      throw HttpError(404, "Not found");
     }
+    res.status(200).json(contact);
+  } catch (error) {
+    next(error);
+  }
 };
 
-export const createContact = async (req, res) => {
-    const { error } = createContactSchema.validate(req.body);
+export const createContact = async (req, res, next) => {
+  try {
+    const { name, email, phone } = req.body;
+    const { error } = createContactSchema.validate({ name, email, phone });
     if (error) {
-        throw HttpError(400, error.message);
+      throw HttpError(400, error.message);
     }
-    const result = await Contact(req.body);
-    res.status(201).json(result);
+    const newContact = new Contact({ name, email, phone });
+    await newContact.save();
+    res.status(201).json(newContact);
+  } catch (error) {
+    next(error);
+  }
 };
 
 
 export const updateContact = async (req, res) => {
-    const { id } = req.params;
-
-    const emptyBody = Object.keys(req.body).length === 0;
-    if (emptyBody) {
+  const { id } = req.params;
+  const { name, email, phone } = req.body;
+  
+     if (!name && !email && !phone) {
         throw HttpError(400, "Body must have at least one field");
     }
 
@@ -69,19 +71,20 @@ export const updateContact = async (req, res) => {
       throw HttpError(400, error.message);
     }
 
-    const contact = await Contact.findByIdAndUpdate(id, req.body);
+    const contact = await Contact.findByIdAndUpdate(id, { name, email, phone }, { new: true });
     if (!contact) {
       throw HttpError(404);
     }
-    res.status(200).json(result); 
+    res.status(200).json(contact); 
 };
  
+
 export const updateStatusContact = async (req, res, next) => {
   try {
-    const { id } = req.params;
+    const { contactId } = req.params;
     const { favorite } = req.body;
 
-    const contact = await Contact.findByIdAndUpdate(id, { new:true });
+    const contact = await Contact.findById(contactId);
     if (!contact) {
       throw HttpError(404, "Not found");
     }
@@ -94,6 +97,5 @@ export const updateStatusContact = async (req, res, next) => {
     next(error);
   }
 };
-
 
    
