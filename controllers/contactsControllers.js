@@ -5,9 +5,10 @@ import { createContactSchema, updateContactSchema } from "../schemas/contactsSch
 
 
 export const getAllContacts = async (req, res, next) => {
-    try {
-        const contacts = await Contact.find();
-        res.json(contacts);
+  try {
+      const { _id: owner } = req.user;
+        const contacts = await Contact.find({owner});
+        res.status(200).json(contacts);
     }
     catch (error) {
         next(error)
@@ -16,8 +17,10 @@ export const getAllContacts = async (req, res, next) => {
 
 export const getOneContact = async (req, res, next) => {
     try {
-        const { id } = req.params;
-        const contact = await Contact.findById(id);
+      const { _id: owner } = req.user;
+      const { id } = req.params;
+      
+      const contact = await Contact.findOne({ _id: id, owner });
         if (!contact) {
             throw HttpError(404);
         }
@@ -32,7 +35,9 @@ export const getOneContact = async (req, res, next) => {
 export const deleteContact = async (req, res, next) => { 
     try {
         const { id } = req.params;
-        const contact = await Contact.findByIdAndDelete(id);
+      const { _id: owner } = req.user;
+      
+    const contact = await Contact.findOneAndDelete({ _id: id, owner });
         if (!contact) {
       throw HttpError(404, "Not found");
     }
@@ -44,6 +49,7 @@ export const deleteContact = async (req, res, next) => {
 
 export const createContact = async (req, res, next) => {
   try {
+
     const { name, email, phone } = req.body;
     const { error } = createContactSchema.validate({ name, email, phone });
     if (error) {
@@ -59,6 +65,8 @@ export const createContact = async (req, res, next) => {
 
 
 export const updateContact = async (req, res) => {
+
+  const { _id: owner } = req.user;
   const { id } = req.params;
   const { name, email, phone } = req.body;
   
@@ -71,7 +79,7 @@ export const updateContact = async (req, res) => {
       throw HttpError(400, error.message);
     }
 
-    const contact = await Contact.findByIdAndUpdate(id, { name, email, phone }, { new: true });
+    const contact = await Contact.findOneAndUpdate({ _id: id, owner }, { name, email, phone }, { new: true });
     if (!contact) {
       throw HttpError(404);
     }
@@ -79,12 +87,16 @@ export const updateContact = async (req, res) => {
 };
  
 
+
 export const updateStatusContact = async (req, res, next) => {
   try {
-    const { contactId } = req.params;
+    
     const { favorite } = req.body;
 
-    const contact = await Contact.findById(contactId);
+    const { _id: owner } = req.user;
+    const { id } = req.params;
+      
+      const contact = await Contact.findOne({ _id: id, owner });
     if (!contact) {
       throw HttpError(404, "Not found");
     }

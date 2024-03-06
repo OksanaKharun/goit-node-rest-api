@@ -21,7 +21,13 @@ export const registerUser = async (req, res, next) => {
             subscription:User.subscription,
         });
 
-        res.status(201).send({ message: "Registration successfully" });
+        res.status(201).json(
+            {
+                "users": {
+                    email: newUser.email,
+                    subscription: newUser.subscription,
+                }
+            });
     }   catch (error) {
         next(error);
     }
@@ -55,7 +61,13 @@ export const loginUser = async (req, res, next) => {
 
         await User.findByIdAndUpdate(user._id, { token });
 
-        res.send({ token });
+        res.json({
+            token,
+            "users": {
+                email: user.email,
+                subscription: user.subscription,
+            }
+        });
     }   catch (error) {
         next(error);
     }
@@ -72,17 +84,19 @@ export const logoutUser = async (req, res, next) => {
   }
 }
 
+
+
 export const getCurrentUser = async (req, res, next) => {
-  try {
-      res.json(
-          {
-              email: req.user.email,
-              subscription: req.user.subscription
-          });
-  } catch (error) {
-    next(error);
-  }
-};
+    try {
+        const { email, subscription } = req.user;
+        res.json({
+            email,
+            subscription,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
 
 
 

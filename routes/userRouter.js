@@ -8,8 +8,11 @@ import { getCurrentUser } from '../controllers/usersControllers.js';
 const usersRouter = express.Router();
 
 usersRouter.post('/register', validateBody(registrationSchema), registerUser);
+
 usersRouter.post('/login', validateBody(loginSchema), loginUser);
+
 usersRouter.get('/current', authMiddleware, getCurrentUser);
+
 usersRouter.post('/logout', authMiddleware, logoutUser);
 
 export default usersRouter;
