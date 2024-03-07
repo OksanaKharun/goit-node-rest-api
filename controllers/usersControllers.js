@@ -2,6 +2,9 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import User from '../models/user.js';
 import HttpError from '../helpers/HttpError.js';
+import 'dotenv/config';
+
+
 
 
 export const registerUser = async (req, res, next) => {
@@ -16,6 +19,7 @@ export const registerUser = async (req, res, next) => {
         res.status(201).json(
             {
                 "users": {
+
                     email: newUser.email,
                     subscription: newUser.subscription,
                 }
@@ -77,15 +81,20 @@ export const logoutUser = async (req, res, next) => {
 }
 
 
-  export const getCurrentUser = async (req, res) => {
-  const { token, email, subscription } = req.user;
 
-  if (!token) {
-    return res.status(401).json({ message: "Not authorized" });
-  }
-  res.json({
-    email,
-    subscription,
-  });
+ export const getCurrentUser = async (req, res, next) => {
+     try {
+         const { token, email, subscription } = req.user;
+
+         if (!token) {
+             return res.status(401).json({ message: "Not authorized" });
+         }
+         res.json({
+             email,
+             subscription,
+         });
+
+     } catch (error) {
+         next(error);
+     }
 };
-

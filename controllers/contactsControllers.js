@@ -50,19 +50,26 @@ export const deleteContact = async (req, res, next) => {
 export const createContact = async (req, res, next) => {
   try {
 
-    const { name, email, phone } = req.body;
+   const { name, email, phone } = req.body;
+    const { _id: owner } = req.user;
+
+        const result = await Contact.create({...req.body, owner});
+    if (!result) {
+      throw HttpError(400, error.message);
+    }
+
     const { error } = createContactSchema.validate({ name, email, phone });
     if (error) {
       throw HttpError(400, error.message);
     }
-    const newContact = new Contact({ name, email, phone });
-    await newContact.save();
-    res.status(201).json(newContact);
-  } catch (error) {
-    next(error);
-  }
-};
+    
+    
+    res.status(201).json(result)
 
+    } catch (error) {
+        next(error)
+    }
+};
 
 export const updateContact = async (req, res) => {
 
