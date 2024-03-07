@@ -1,24 +1,27 @@
 import jwt from 'jsonwebtoken';
 import User from '../models/user.js';
 import HttpError from '../helpers/HttpError.js';
+const { JWT_SECRET } = process.env;
 
 const authMiddleware = async (req, res, next) => {
-  try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) {
-      throw HttpError(401, 'Not authorized');
+   const { authorization = "" } = req.headers;
+    const [bearer, token] = authorization.split(" ");
+    if (bearer !== "Bearer") {
+        throw HttpError(401);
     }
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-      
-    const user = await User.findById(decodedToken.userId);
-    if (!user || user.token !== token) {
-      throw HttpError(401, 'Not authorized');
+
+    try {
+        const { id } = jwt.verify(token, JWT_SECRET);
+        const user = await User.findById(id);
+        if (!user || !user.token) {
+            throw HttpError(401);
+        }
+        req.user = user;
+        next();
     }
-    req.user = user;
-    next();
-  } catch (error) {
-    next(error);
-  }
-};
+    catch (error) {
+        next(HttpError(401, `"Not authorized"`));
+    }
+}
 
 export default authMiddleware;

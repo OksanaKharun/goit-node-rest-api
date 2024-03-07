@@ -46,34 +46,26 @@ const userSchema = new Schema(
   },
   { versionKey: false, timestamps: true }
 );
+
 userSchema.post('save', handleMongooseError);
 
 
-export const registrationSchema = Joi.object({
-  email: Joi.string().required().messages({
-    'any.required': `Missing required email field`,
-  }),
-  password: Joi.string().min(6).required().messages({
-    'any.required': `Missing required password field`,
-  }),
-});
+
+  export const registrationSchema = Joi.object({
+    password: Joi.string().min(4).required(),
+    email: Joi.string().email().required(),
+    subscription: Joi.string()
+  });
 
 export const loginSchema = Joi.object({
-  email: Joi.string().required().messages({
-    'any.required': `Missing required email field`,
-  }),
-  password: Joi.string().min(6).required().messages({
-    'any.required': `Missing required password field`,
-  }),
+    password: Joi.string().min(4).required(),
+    email: Joi.string().email().required(),
 });
 
+
 const emailSchema = Joi.object({
-  email: Joi.string().required().messages({
-    'any.required': `Missing required email field`,
-  }),
-  password: Joi.string().min(6).required().messages({
-    'any.required': `Missing required password field`,
-  }),
+  email: Joi.string().required(),
+  password: Joi.string().min(6).required(),
 });
 
 const schemas = {
