@@ -6,3 +6,4 @@ const handleMongooseError = (error, data, next) => {
 };
 
 export { handleMongooseError };
+

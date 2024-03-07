@@ -6,35 +6,27 @@ import HttpError from '../helpers/HttpError.js';
 
 export const registerUser = async (req, res, next) => {
     try {
-        const { name, email, password } = req.body;
-        const normalizedEmail = email.toLowerCase();
-
-        const existingUser = await User.findOne({ email: normalizedEmail });
-        if (existingUser) {
-            throw HttpError(409, 'Email in use');
+        const { email, password } = req.body;
+        const user = await User.findOne({ email });
+        if (user) {
+            throw HttpError(409, "Email in use");
         }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        await User.create({
-            name,
-            email: normalizedEmail,
-            password: hashedPassword,
-            subscription:User.subscription,
-        });
-
+        const hashPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({ ...req.body, password: hashPassword });
         res.status(201).json(
             {
                 "users": {
                     email: newUser.email,
                     subscription: newUser.subscription,
                 }
-            });
-    }   catch (error) {
-        next(error);
+            })
+    }
+    catch (error) {
+        next(error)
     }
 };
 
-
-
+       
 export const loginUser = async (req, res, next) => {
     try {
         const { email, password } = req.body;
@@ -85,18 +77,15 @@ export const logoutUser = async (req, res, next) => {
 }
 
 
+  export const getCurrentUser = async (req, res) => {
+  const { token, email, subscription } = req.user;
 
-export const getCurrentUser = async (req, res, next) => {
-    try {
-        const { email, subscription } = req.user;
-        res.json({
-            email,
-            subscription,
-        })
-    } catch (error) {
-        next(error)
-    }
-}
-
-
+  if (!token) {
+    return res.status(401).json({ message: "Not authorized" });
+  }
+  res.json({
+    email,
+    subscription,
+  });
+};
 
