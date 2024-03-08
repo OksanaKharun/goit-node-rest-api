@@ -72,29 +72,26 @@ export const loginUser = async (req, res, next) => {
 
 export const logoutUser = async (req, res, next) => {
   try {
-    await User.findByIdAndUpdate(req.user.id, { token: null });
+        const { _id } = req.user;
+        await User.findOneAndUpdate(_id, { token: '' });
+        throw HttpError(204);
 
-    res.status(204).end();
-  } catch (error) {
-    next(error);
-  }
+
+    } catch (error) {
+        next(error)
+    }
 }
 
 
-
  export const getCurrentUser = async (req, res, next) => {
-     try {
-         const { token, email, subscription } = req.user;
-
-         if (!token) {
-             return res.status(401).json({ message: "Not authorized" });
-         }
-         res.json({
-             email,
-             subscription,
-         });
-
-     } catch (error) {
-         next(error);
-     }
-};
+     
+    try {
+        const { email, subscription } = req.user;
+        res.json({
+            email,
+            subscription,
+        })
+    } catch (error) {
+        next(error)
+    }
+}
