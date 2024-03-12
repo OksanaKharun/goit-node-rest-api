@@ -3,9 +3,13 @@ import bcrypt from 'bcrypt';
 import User from '../models/user.js';
 import HttpError from '../helpers/HttpError.js';
 import 'dotenv/config';
+import path from "path";
+import gravatar from "gravatar";
+import fs from "fs/promises";
+import Jimp from "jimp";
 
 
-
+const avatarsDir = path.resolve("public", "avatars");
 
 export const registerUser = async (req, res, next) => {
     try {
@@ -14,8 +18,10 @@ export const registerUser = async (req, res, next) => {
         if (user) {
             throw HttpError(409, "Email in use");
         }
+
+        const avatarURL = gravatar.url(email, { protocol: 'https', s: '250' });
         const hashPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ ...req.body, password: hashPassword });
+        const newUser = await User.create({ ...req.body, password: hashPassword ,avatarURL});
         res.status(201).json(
             {
                 "users": {
@@ -91,6 +97,32 @@ export const logoutUser = async (req, res, next) => {
             email,
             subscription,
         })
+    } catch (error) {
+        next(error)
+    }
+}
+
+export const updateAvatar = async (req, res, next) => {
+    try {
+        const { _id } = req.user;
+        if (!req.file) {
+            throw HttpError(400, "Please add your file");
+        }
+        const { path: tempUpload, originalname } = req.file;
+        const filename = `${_id}_${originalname}`;
+
+        const resultUpload = path.join(avatarsDir, filename);
+
+        const img = await Jimp.read(tempUpload);
+        await img.resize(250, 250).quality(60).write(tempUpload);
+
+
+        await fs.rename(tempUpload, resultUpload);
+        const avatarURL = path.join("avatars", filename);
+        await User.findByIdAndUpdate(_id, { avatarURL });
+        res.json({
+             avatarURL
+         })
     } catch (error) {
         next(error)
     }
