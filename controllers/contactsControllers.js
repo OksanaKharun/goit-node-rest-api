@@ -16,7 +16,7 @@ export const getAllContacts = async (req, res, next) => {
 };
 
 export const getOneContact = async (req, res, next) => {
-    try {
+    try { 
       const { _id: owner } = req.user;
       const { id } = req.params;
       

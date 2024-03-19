@@ -12,6 +12,7 @@ import authMiddleware from "../middleware/authMiddleware.js";
 
 const contactsRouter = express.Router();
 
+
 contactsRouter.get("/", authMiddleware, getAllContacts);
 
 contactsRouter.get("/:id", authMiddleware, getOneContact);
