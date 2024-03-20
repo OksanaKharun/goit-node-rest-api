@@ -72,7 +72,8 @@ export const createContact = async (req, res, next) => {
 };
 
 export const updateContact = async (req, res) => {
-
+  try {
+  
   const { _id: owner } = req.user;
   const { id } = req.params;
   const { name, email, phone } = req.body;
@@ -91,6 +92,10 @@ export const updateContact = async (req, res) => {
       throw HttpError(404);
     }
     res.status(200).json(contact); 
+   
+    } catch (error) {
+        next(error)
+    }
 };
  
 
