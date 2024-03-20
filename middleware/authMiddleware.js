@@ -5,6 +5,7 @@ import HttpError from '../helpers/HttpError.js';
 const { JWT_SECRET } = process.env;
 
 const authMiddleware = async (req, res, next) => {
+    
     try {
         const { authorization = "" } = req.headers;
         const [bearer, token] = authorization.split(" ");

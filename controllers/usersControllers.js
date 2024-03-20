@@ -12,7 +12,7 @@ import { nanoid } from "nanoid";
 
 
 const avatarsDir = path.resolve("public", "avatars");
-const { JWT_SECRET} = process.env;
+const { JWT_SECRET } = process.env;
 
 
 export const registerUser = async (req, res, next) => {
@@ -107,6 +107,7 @@ export const logoutUser = async (req, res, next) => {
 }
 
 export const updateAvatar = async (req, res, next) => {
+
     try {
         const { _id } = req.user;
         if (!req.file) {
