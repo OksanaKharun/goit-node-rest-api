@@ -12,7 +12,7 @@ import { nanoid } from "nanoid";
 
 
 const avatarsDir = path.resolve("public", "avatars");
-const { SECRET_KEY} = process.env;
+const { JWT_SECRET} = process.env;
 
 
 export const registerUser = async (req, res, next) => {
@@ -63,8 +63,8 @@ export const loginUser = async (req, res, next) => {
         const payload = {
             id: user._id
         }
-        console.log(SECRET_KEY);
-        const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "23h" });
+        console.log(JWT_SECRET);
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "23h" });
         await User.findOneAndUpdate(user._id, { token });
 
         res.json({
