@@ -71,7 +71,7 @@ export const createContact = async (req, res, next) => {
     }
 };
 
-export const updateContact = async (req, res) => {
+export const updateContact = async (req, res, next) => {
   try {
   
   const { _id: owner } = req.user;
